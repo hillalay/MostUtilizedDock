@@ -90,11 +90,10 @@ def _mini_test_dc():
 
     print("Sequential:", s_row, s_count)
     print("D&C       :", d_row, d_count)
+    assert (s_row, s_count) == (d_row, d_count), \
+        f"HATA! Sequential sonucu {s_row, s_count}, D&C sonucu {d_row, d_count}"
 
-    if (s_row, s_count) == (d_row, d_count):
-        print("OK! D&C sonucu Sequential ile aynı.")
-    else:
-        print("HATA! Sonuçlar farklı.")
+    print("OK! D&C sonucu Sequential ile aynı.")
 
 
 if __name__ == "__main__":
