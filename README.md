@@ -30,13 +30,11 @@ The project includes data preprocessing, algorithm design, complexity analysis, 
 
 We model dock usage using a **binary occupancy matrix**:
 
+U in {0,1}^{R\*T}
 
-U in {0,1}^{R*T}
-
-
-- **R** → number of docks  
-- **T** → number of time slots  
-- **U[i, t] = 1** → dock *i* is occupied at time *t*
+- **R** → number of docks
+- **T** → number of time slots
+- **U[i, t] = 1** → dock _i_ is occupied at time _t_
 
 🎯 **Goal:**  
 Find the dock with the **maximum number of 1s**.  
@@ -53,10 +51,10 @@ Data preparation scripts:
 src/create_data.py
 src/setup_full_data.py
 
-
 These scripts:
 
-### ✔ Convert raw event logs into time-discretized intervals  
+### ✔ Convert raw event logs into time-discretized intervals
+
 Each event has:
 
 - `dock_id`
@@ -68,11 +66,12 @@ We discretize the timeline using a fixed time step:
 **Δ = 10 minutes**
 
 ### ✔ Build timestamp grid
+
 From the earliest arrival → latest departure.
 
 ### ✔ Create occupancy matrix (U)
-For each dock:
 
+For each dock:
 
 1. Find index interval using `np.searchsorted`
 2. Mark occupied slots:
@@ -81,9 +80,9 @@ For each dock:
 
 Generated inside `data/`:
 
-- **dock_occupancy_matrix.csv** → binary matrix  
-- **dock_occupied_counts.csv** → row totals  
-- **raw_logs.csv** → combined raw logs  
+- **dock_occupancy_matrix.csv** → binary matrix
+- **dock_occupied_counts.csv** → row totals
+- **raw_logs.csv** → combined raw logs
 - **results.csv** → timing experiments
 
 ---
@@ -98,34 +97,34 @@ src/sequential.py
 
 For each row (i):
 
-1. Count total `1`s  
-2. Track current best  
-3. If count > best → update  
-4. If tie → keep smaller index  
+1. Count total `1`s
+2. Track current best
+3. If count > best → update
+4. If tie → keep smaller index
 
 ### ✔ Correctness
 
-- Scans 100% of matrix  
-- Deterministic  
-- Tie-breaking rule consistent with project requirements  
+- Scans 100% of matrix
+- Deterministic
+- Tie-breaking rule consistent with project requirements
 
 ### ✔ Complexity
 
-- **Time: Θ(RT)**  
-- **Space: O(1)**  
+- **Time: Θ(RT)**
+- **Space: O(1)**
 
 Run:
 
 bash
 python src/sequential.py
 
--------------------------------------------------------------------------
+---
+
 4. Divide & Conquer Algorithm (Role B)
 
 File:
 
 src/divide_conquer.py
-
 
 The D&C approach follows the assignment's required structure:
 
@@ -133,9 +132,8 @@ The D&C approach follows the assignment's required structure:
 
 Split matrix column-wise:
 
-left  = U[:, :mid]
+left = U[:, :mid]
 right = U[:, mid:]
-
 
 Recursively compute counts for both halves:
 
@@ -180,8 +178,7 @@ D&C is conceptually better for parallel systems
 
 ## 6. Experiments & Results
 
-**File:**  
-
+**File:**
 
 src/run_experiment.py
 
@@ -189,15 +186,14 @@ This script performs the full timing-based comparison between the Sequential and
 
 ### What the script does:
 
-- Loads the occupancy matrix:  
+- Loads the occupancy matrix:
 
 data/dock_occupancy_matrix.csv
-
 
 - Runs both algorithms **multiple times** (default N ≥ 10)
 - Checks that both algorithms produce **identical results**
 - Measures runtime using `time.perf_counter()`
-- Saves all timing results into:  
+- Saves all timing results into:
 
 data/results.csv
 
@@ -215,16 +211,14 @@ You can run the experiment with:
 bash
 python src/run_experiment.py
 
-
 ### Output Example
 
-* Sequential: best_row = 3, count = 142
-* Divide & Conquer: best_row = 3, count = 142
-* OK — Both methods match.
-
+- Sequential: best_row = 3, count = 142
+- Divide & Conquer: best_row = 3, count = 142
+- OK — Both methods match.
 
 7. Visualizations
-File:
+   File:
 
 src/visualize_results.py
 Generates:
@@ -237,7 +231,8 @@ Bar Chart
 Runtime Scaling Plot
 ![alt text](image-2.png)
 
----------------------------------------------------
+---
+
 ```
 📦 MostUtilizedDock
 ├── data
@@ -268,11 +263,12 @@ Runtime Scaling Plot
 └──  image-3.png
 ```
 
----------------------------------------------------
+---
+
 9. Reproducibility Guide
-Step 1 — Generate data
-python src/create_data.py
-python src/setup_full_data.py
+   Step 1 — Generate data
+   python src/create_data.py
+   python src/setup_full_data.py
 
 Step 2 — Run algorithms
 python src/sequential.py
@@ -285,22 +281,24 @@ Step 4 — Generate figures
 python src/visualize_results.py
 
 10. Testing
-src/test_sequential.py
-Run:
-python src/test_sequential.py
+    src/test_sequential.py
+    Run:
+    python src/test_sequential.py
 
 Covers:
-* correctness
-* ties
-* zero matrices
-* simple known matrices
 
+- correctness
+- ties
+- zero matrices
+- simple known matrices
 
-### 11. Contributors
+## 11. Contributors
+
 | Role       | Member         | Responsibilities                                       |
-| ---------- | -------------- |  |
-| **Role A** | *Your Name*    | Data preparation, Sequential algorithm, Visualizations |
-| **Role B** | *Partner Name* | D&C design, complexity analysis, experiments           |
+| ---------- | -------------- | ------------------------------------------------------ |
+| **Role A** | _Your Name_    | Data preparation, Sequential algorithm, Visualizations |
+| **Role B** | _Partner Name_ | D&C design, Complexity analysis, Experiments           |
 
-License
+### License
+
 This project is developed as part of Algorithm and Analysis coursework (HW2).
