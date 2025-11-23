@@ -9,34 +9,35 @@ This project identifies the most utilized dock using a binary occupancy matrix a
 
 # Project Structure
 
-MostUtilizedDock/
-├── data/
-│ ├── dock_events_raw_sample.csv
-│ ├── dock_occupancy_matrix.csv
-│ ├── dock_occupied_counts.csv
-│ ├── raw_logs.csv
-│ └── results.csv
+```
+📦 MostUtilizedDock
+├── 📁 data
+│   ├── 📄 dock_events_raw_sample.csv
+│   ├── 📄 dock_occupancy_matrix.csv
+│   ├── 📄 dock_occupied_counts.csv
+│   ├── 📄 raw_logs.csv
+│   └── 📄 results.csv
 │
-├── figures/
-│ ├── bar_totals.png
-│ ├── heatmap.png
-│ └── runtime_analysis.png
+├── 📁 figures
+│   ├── 🖼️ bar_totals.png
+│   ├── 🖼️ heatmap.png
+│   └── 🖼️ runtime_analysis.png
 │
-├── report/
-│ └── .gitkeep
+├── 📁 report
+│   └── 📄 .gitkeep
 │
-├── src/
-│ ├── create_data.py
-│ ├── divide_conquer.py
-│ ├── run_experiment.py
-│ ├── sequential.py
-│ ├── setup_full_data.py
-│ ├── test_sequential.py
-│ └── visualize_results.py
+├── 🧠 src
+│   ├── 📝 create_data.py
+│   ├── 📝 divide_conquer.py
+│   ├── 📝 run_experiment.py
+│   ├── 📝 sequential.py
+│   ├── 📝 setup_full_data.py
+│   ├── 📝 test_sequential.py
+│   └── 📝 visualize_results.py
 │
-└── README.md
+└── 📘 README.md
+```
 
----
 
 # Problem Definition
 
