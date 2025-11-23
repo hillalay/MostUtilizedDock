@@ -232,24 +232,24 @@ Runtime Scaling Plot
 ![alt text](image-2.png)
 
 ---------------------------------------------------
-8. Project Structure
-MostUtilizedDock/
-├── data/
+```
+📦 MostUtilizedDock
+├── data
 │   ├── dock_events_raw_sample.csv
 │   ├── dock_occupancy_matrix.csv
 │   ├── dock_occupied_counts.csv
 │   ├── raw_logs.csv
 │   └── results.csv
 │
-├── figures/
+├── figures
 │   ├── bar_totals.png
 │   ├── heatmap.png
 │   └── runtime_analysis.png
 │
-├── report/
-│   └── .gitkeep
+├──  report
+│   └── report
 │
-├── src/
+├──  src
 │   ├── create_data.py
 │   ├── divide_conquer.py
 │   ├── run_experiment.py
@@ -258,7 +258,12 @@ MostUtilizedDock/
 │   ├── test_sequential.py
 │   └── visualize_results.py
 │
-└── README.md
+└──  README.md
+└──  image-1.png
+└──  README.md
+```
+
+------------------------------------------------------------------------
 9. Reproducibility Guide
 Step 1 — Generate data
 python src/create_data.py
