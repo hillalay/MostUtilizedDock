@@ -296,8 +296,8 @@ Covers:
 
 | Role       | Member         | Responsibilities                                       |
 | ---------- | -------------- | ------------------------------------------------------ |
-| **Role A** | _Your Name_    | Data preparation, Sequential algorithm, Visualizations |
-| **Role B** | _Partner Name_ | D&C design, Complexity analysis, Experiments           |
+| **Role A** | Hilal AY   | Data preparation, Sequential algorithm, Visualizations |
+| **Role B** | Halil Abacı | D&C design, Complexity analysis, Experiments           |
 
 ### License
 
