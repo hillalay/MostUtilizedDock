@@ -30,9 +30,9 @@ The project includes data preprocessing, algorithm design, complexity analysis, 
 
 We model dock usage using a **binary occupancy matrix**:
 
-\[
-U \in \{0,1\}^{R \times T}
-\]
+
+U in {0,1}^{R*T}
+
 
 - **R** → number of docks  
 - **T** → number of time slots  
@@ -65,21 +65,17 @@ Each event has:
 
 We discretize the timeline using a fixed time step:
 
-\[
-\Delta = 10\text{ minutes}
-\]
+**Δ = 10 minutes**
 
 ### ✔ Build timestamp grid
 From the earliest arrival → latest departure.
 
-### ✔ Create occupancy matrix \( U \)
+### ✔ Create occupancy matrix (U)
 For each dock:
 
-1. Find index interval by `np.searchsorted`
-2. Mark:
-   \[
-   U[i, t] = 1 \quad \text{for } t \in [start,end)
-   \]
+
+1. Find index interval using `np.searchsorted`
+2. Mark occupied slots:
 
 ### ✔ Output files
 
@@ -100,7 +96,7 @@ src/sequential.py
 
 ### ✔ Logic
 
-For each row \(i\):
+For each row (i):
 
 1. Count total `1`s  
 2. Track current best  
@@ -148,9 +144,7 @@ Recursively compute counts for both halves:
 4.2 Recursive Tournament Argmax
 
 Split vector into halves:
-
 Find best index on left
-
 Find best index on right
 
 Compare
@@ -160,9 +154,7 @@ If tie → return smaller index
 ✔ Complexity
 
 Work: Θ(RT)
-
 Span: Θ(log T) (parallelizable)
-
 Space: O(log T)
 
 This matches the theoretical expectations from divide-and-conquer design.
@@ -225,8 +217,8 @@ python src/run_experiment.py
 
 
 Output example:
-Sequential:       best_row=3 count=142
-Divide & Conquer: best_row=3 count=142
+Sequential:       best_row=3  count=142
+Divide & Conquer: best_row=3  count=142
 OK — Both methods match.
 
 7. Visualizations
