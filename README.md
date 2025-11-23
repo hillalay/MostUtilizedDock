@@ -218,9 +218,9 @@ python src/run_experiment.py
 
 ### Output Example
 
-Sequential: best_row = 3, count = 142
-Divide & Conquer: best_row = 3, count = 142
-OK — Both methods match.
+* Sequential: best_row = 3, count = 142
+* Divide & Conquer: best_row = 3, count = 142
+* OK — Both methods match.
 
 
 7. Visualizations
