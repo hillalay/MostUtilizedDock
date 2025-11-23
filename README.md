@@ -220,7 +220,7 @@ data/results.csv
 
 You can run the experiment with:
 
-```bash
+bash
 python src/run_experiment.py
 
 
