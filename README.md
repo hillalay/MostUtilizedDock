@@ -1,204 +1,298 @@
-# Most Utilized Dock — Algorithm Analysis Project
+# 🚚 Most Utilized Dock — Algorithm Analysis Project
 
-This project identifies the most utilized dock using a binary occupancy matrix and compares two methods:
+This project analyzes dock utilization by constructing a binary occupancy matrix from raw event logs and identifying the **most utilized dock**.  
+Two algorithmic approaches are implemented and compared:
 
-1. Sequential Algorithm
-2. Divide & Conquer Algorithm
+- **Sequential Method (Role A)**
+- **Divide & Conquer Method (Role B)**
 
-## The workflow includes data preprocessing, occupancy matrix creation, algorithm comparison, visualizations, and timing experiments.
-
-# Project Structure
-
-```
-📦 MostUtilizedDock
-├── 📁 data
-│   ├── 📄 dock_events_raw_sample.csv
-│   ├── 📄 dock_occupancy_matrix.csv
-│   ├── 📄 dock_occupied_counts.csv
-│   ├── 📄 raw_logs.csv
-│   └── 📄 results.csv
-│
-├── 📁 figures
-│   ├── 🖼️ bar_totals.png
-│   ├── 🖼️ heatmap.png
-│   └── 🖼️ runtime_analysis.png
-│
-├── 📁 report
-│   └── 📄 .gitkeep
-│
-├── 🧠 src
-│   ├── 📝 create_data.py
-│   ├── 📝 divide_conquer.py
-│   ├── 📝 run_experiment.py
-│   ├── 📝 sequential.py
-│   ├── 📝 setup_full_data.py
-│   ├── 📝 test_sequential.py
-│   └── 📝 visualize_results.py
-│
-└── 📘 README.md
-```
-
-
-# Problem Definition
-
-We represent dock usage as a binary matrix:
-
-                  U ∈ {0,1}^(R*T)
-
-- R → number of docks (rows)
-- T → time slots
-- U[i, t] = 1 → dock i is occupied at time t
-
-Goal:
-Find the dock with the maximum number of 1s.
-Ties → choose the smallest index.
+The project includes data preprocessing, algorithm design, complexity analysis, timing experiments, and visualizations.
 
 ---
 
-# Role A — Data Preparation & Sequential Method
+## 📚 Table of Contents
 
-✔️ Data Preparation
+- [1. Problem Definition](#1-problem-definition)
+- [2. Data Preparation (Role A)](#2-data-preparation-role-a)
+- [3. Sequential Algorithm (Role A)](#3-sequential-algorithm-role-a)
+- [4. Divide & Conquer Algorithm (Role B)](#4-divide--conquer-algorithm-role-b)
+- [5. Complexity Analysis](#5-complexity-analysis)
+- [6. Experiments & Results](#6-experiments--results)
+- [7. Visualizations](#7-visualizations)
+- [8. Project Structure](#8-project-structure)
+- [9. Reproducibility Guide](#9-reproducibility-guide)
+- [10. Testing](#10-testing)
+- [11. Contributors](#11-contributors)
 
-Scripts:
+---
 
-- src/create_data.py
-- src/setup_full_data.py
+# 1. Problem Definition
+
+We model dock usage using a **binary occupancy matrix**:
+
+\[
+U \in \{0,1\}^{R \times T}
+\]
+
+- **R** → number of docks  
+- **T** → number of time slots  
+- **U[i, t] = 1** → dock *i* is occupied at time *t*
+
+🎯 **Goal:**  
+Find the dock with the **maximum number of 1s**.  
+If ties occur → choose **smaller row index**.
+
+This problem appears in scheduling, transportation analytics, marina planning, and resource optimization.
+
+---
+
+# 2. Data Preparation (Role A)
+
+Data preparation scripts:
+
+src/create_data.py
+src/setup_full_data.py
+
 
 These scripts:
 
-- Load raw logs (raw_logs.csv)
-- Convert events into equal-length time slots (Δ = 10 minutes)
-- Create occupancy matrix dock_occupancy_matrix.csv
-- (Optional) Save per-dock totals → dock_occupied_counts.csv
+### ✔ Convert raw event logs into time-discretized intervals  
+Each event has:
 
-✔️ Sequential Algorithm
+- `dock_id`
+- `arrival_time`
+- `departure_time`
 
-File: 'src/sequential.py'
+We discretize the timeline using a fixed time step:
 
-✔️ Algorithm:
+\[
+\Delta = 10\text{ minutes}
+\]
 
-- For each row (dock), count 1s
-- Track maximum count
-- Ties keep the smaller dock index
-- Return (best_row, best_count)
+### ✔ Build timestamp grid
+From the earliest arrival → latest departure.
 
-✔️ Complexity:
+### ✔ Create occupancy matrix \( U \)
+For each dock:
 
-- Time: Θ(RT)
-- Space: O(1)
+1. Find index interval by `np.searchsorted`
+2. Mark:
+   \[
+   U[i, t] = 1 \quad \text{for } t \in [start,end)
+   \]
 
-Run manually:
-'python src/sequential.py'
+### ✔ Output files
 
-# Role B — Divide & Conquer Method
+Generated inside `data/`:
 
-File: 'src/divide_conquer.py'
+- **dock_occupancy_matrix.csv** → binary matrix  
+- **dock_occupied_counts.csv** → row totals  
+- **raw_logs.csv** → combined raw logs  
+- **results.csv** → timing experiments
 
-✔️ Method Summary
+---
 
-1. Split matrix columns into left/right halves
-2. Recursively compute row sums
-3. Combine by adding row-sum vectors
-4. Run recursive argmax
-5. Tie → smaller index
+# 3. Sequential Algorithm (Role A)
 
-✔️ Complexity
+File:
 
-- Work: Θ(RT)
-- Span: Θ(log T) (parallelizable)
-- Space: O(log T) recursion depth
+src/sequential.py
 
-### Run manually:
+### ✔ Logic
 
-'python src/divide_conquer.py'
+For each row \(i\):
 
-# Timing Experiments
+1. Count total `1`s  
+2. Track current best  
+3. If count > best → update  
+4. If tie → keep smaller index  
 
-File: src/run_experiment.py
+### ✔ Correctness
+
+- Scans 100% of matrix  
+- Deterministic  
+- Tie-breaking rule consistent with project requirements  
+
+### ✔ Complexity
+
+- **Time: Θ(RT)**  
+- **Space: O(1)**  
+
+Run:
+
+```bash
+python src/sequential.py
+
+-------------------------------------------------------------------------
+4. Divide & Conquer Algorithm (Role B)
+
+File:
+
+src/divide_conquer.py
+
+
+The D&C approach follows the assignment's required structure:
+
+4.1 Recursive Row-Count Computation
+
+Split matrix column-wise:
+
+left  = U[:, :mid]
+right = U[:, mid:]
+
+
+Recursively compute counts for both halves:
+
+                   C=Cleft+Cright
+
+4.2 Recursive Tournament Argmax
+
+Split vector into halves:
+
+Find best index on left
+
+Find best index on right
+
+Compare
+
+If tie → return smaller index
+
+✔ Complexity
+
+Work: Θ(RT)
+
+Span: Θ(log T) (parallelizable)
+
+Space: O(log T)
+
+This matches the theoretical expectations from divide-and-conquer design.
+
+5. Complexity Analysis
+
+| Method               | Time  | Space    | Notes                                 |
+| -------------------- | ----- | -------- | ------------------------------------- |
+| **Sequential**       | Θ(RT) | O(1)     | Scans entire matrix                   |
+| **Divide & Conquer** | Θ(RT) | O(log T) | Recursion overhead; parallel-friendly |
+
+Key Insights
+
+Both algorithms have same asymptotic work
+
+Sequential outperforms D&C in Python due to:
+
+Lower constant overhead
+
+No recursion
+
+D&C is conceptually better for parallel systems
+
+6. Experiments & Results
+File:
+
+src/run_experiment.py
+
 
 This script:
 
-- Loads dock_occupancy_matrix.csv
-- Verifies Sequential == D&C output
-- Runs both algorithms many times
-- Produces:
-  data/results.csv
-  figures/runtime_analysis.png
+Loads dock_occupancy_matrix.csv
 
-Run:
+Runs both algorithms multiple times
 
+Compares correctness
+
+Records runtimes into:
+
+data/results.csv
+
+Results include:
+
+Runtime vs number of time slots
+
+Verification that both algorithms agree
+
+Performance difference between Sequential and D&C
+
+Output example:
+Sequential:       best_row=3 count=142
+Divide & Conquer: best_row=3 count=142
+OK — Both methods match.
+
+7. Visualizations
+File:
+
+src/visualize_results.py
+Generates:
+Heatmap
+![alt text](image.png)
+
+Bar Chart
+![alt text](image-1.png)
+
+Runtime Scaling Plot
+![alt text](image-2.png)
+
+---------------------------------------------------
+8. Project Structure
+MostUtilizedDock/
+├── data/
+│   ├── dock_events_raw_sample.csv
+│   ├── dock_occupancy_matrix.csv
+│   ├── dock_occupied_counts.csv
+│   ├── raw_logs.csv
+│   └── results.csv
+│
+├── figures/
+│   ├── bar_totals.png
+│   ├── heatmap.png
+│   └── runtime_analysis.png
+│
+├── report/
+│   └── .gitkeep
+│
+├── src/
+│   ├── create_data.py
+│   ├── divide_conquer.py
+│   ├── run_experiment.py
+│   ├── sequential.py
+│   ├── setup_full_data.py
+│   ├── test_sequential.py
+│   └── visualize_results.py
+│
+└── README.md
+9. Reproducibility Guide
+Step 1 — Generate data
+python src/create_data.py
+python src/setup_full_data.py
+
+Step 2 — Run algorithms
+python src/sequential.py
+python src/divide_conquer.py
+
+Step 3 — Run experiments
 python src/run_experiment.py
 
-# Figures & Visualizations
-
-File: src/visualize_results.py
-
-Generates:
-
-| Figure             | File                           |
-| ------------------ | ------------------------------ |
-| Heatmap of U       | `figures/heatmap.png`          |
-| Totals per dock    | `figures/bar_totals.png`       |
-| Runtime comparison | `figures/runtime_analysis.png` |
-
-Run:
+Step 4 — Generate figures
 python src/visualize_results.py
 
-# Testing
-
-File: src/test_sequential.py
-
+10. Testing
+src/test_sequential.py
 Run:
-
 python src/test_sequential.py
 
-# Covers:
+Covers:
 
-- basic correctness
-- ties
-- zeros
-- simple matrices
+correctness
 
----
+ties
 
-# Expected Outputs
+zero matrices
 
-After running all scripts, you should have:
+simple known matrices
+11. Contributors
+| Role       | Member         | Responsibilities                                       |
+| ---------- | -------------- | ------------------------------------------------------ |
+| **Role A** | *Your Name*    | Data preparation, Sequential algorithm, Visualizations |
+| **Role B** | *Partner Name* | D&C design, complexity analysis, experiments           |
 
-data/dock_occupancy_matrix.csv
-data/results.csv
-figures/heatmap.png
-figures/bar_totals.png
-figures/runtime_analysis.png
-
-Console output example:
-
-Sequential: best_row = 3, best_count = 142
-Divide&Conquer: best_row = 3, best_count = 142
-OK: Both methods match.
-
----
-
-📝 Reproducibility Checklist
-
-- Occupancy matrix generated
-- Sequential & D&C return same results
-- Figures saved (heatmap, bar_totals, runtime_analysis)
-- Timing results saved to data/results.csv
-- Test script passes
-- Report PDF added under /report
-
----
-
-# Authors (Roles)
-
-# Role A:
-
-Data preparation, Sequential algorithm, Visualizations
-
-# Role B:
-
-## Divide & Conquer method, Performance experiments, Complexity analysis
-
-📜 License
+License
 This project is developed as part of Algorithm and Analysis coursework (HW2).
