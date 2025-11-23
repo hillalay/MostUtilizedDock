@@ -186,31 +186,43 @@ No recursion
 
 D&C is conceptually better for parallel systems
 
-6. Experiments & Results
-File:
+## 6. Experiments & Results
+
+**File:**  
+
 
 src/run_experiment.py
 
+This script performs the full timing-based comparison between the Sequential and Divide & Conquer algorithms.
 
-This script:
+### What the script does:
 
-Loads dock_occupancy_matrix.csv
+- Loads the occupancy matrix:  
 
-Runs both algorithms multiple times
+data/dock_occupancy_matrix.csv
 
-Compares correctness
 
-Records runtimes into:
+- Runs both algorithms **multiple times** (default N ≥ 10)
+- Checks that both algorithms produce **identical results**
+- Measures runtime using `time.perf_counter()`
+- Saves all timing results into:  
 
 data/results.csv
 
-Results include:
+---
 
-Runtime vs number of time slots
+### Results include:
 
-Verification that both algorithms agree
+- **Runtime vs number of time slots (T)**
+- **Runtime difference between Sequential vs D&C**
+- **Verification that both algorithms agree**
+- **Data for generating runtime scaling plots**
 
-Performance difference between Sequential and D&C
+You can run the experiment with:
+
+```bash
+python src/run_experiment.py
+
 
 Output example:
 Sequential:       best_row=3 count=142
@@ -238,7 +250,6 @@ Runtime Scaling Plot
 │   ├── dock_events_raw_sample.csv
 │   ├── dock_occupancy_matrix.csv
 │   ├── dock_occupied_counts.csv
-│   ├── raw_logs.csv
 │   └── results.csv
 │
 ├── figures
@@ -250,7 +261,6 @@ Runtime Scaling Plot
 │   └── report
 │
 ├──  src
-│   ├── create_data.py
 │   ├── divide_conquer.py
 │   ├── run_experiment.py
 │   ├── sequential.py
@@ -260,10 +270,11 @@ Runtime Scaling Plot
 │
 └──  README.md
 └──  image-1.png
-└──  README.md
+└──  image-2.png
+└──  image-3.png
 ```
 
-------------------------------------------------------------------------
+---------------------------------------------------
 9. Reproducibility Guide
 Step 1 — Generate data
 python src/create_data.py
@@ -285,14 +296,10 @@ Run:
 python src/test_sequential.py
 
 Covers:
-
-correctness
-
-ties
-
-zero matrices
-
-simple known matrices
+* correctness
+* ties
+* zero matrices
+* simple known matrices
 11. Contributors
 | Role       | Member         | Responsibilities                                       |
 | ---------- | -------------- | ------------------------------------------------------ |
