@@ -4,15 +4,21 @@ import matplotlib.pyplot as plt
 import os
 import math
 
+# Bu dosyada gerçek hocanın verisini kullanarak:
+# - U matrisini oluşturuyorum
+# - Heatmap ve bar chart çizip figures klasörüne kaydediyorum.
+
+
 # --- 1. VERİ SETİNİ OLUŞTUR (Eğer yoksa) ---
 def ensure_data_exists():
+    # data klasörü yoksa oluşturuyorum.
     if not os.path.exists("data"):
         os.makedirs("data")
-        
+
     file_path = "data/raw_logs.csv"
-    
-    # Veri zaten varsa tekrar yazmayalım, ama formatı farklı olabilir.
-    # O yüzden üzerine yazmak (overwrite) en garantisi.
+
+    # Buradaki csv_content, hocanın verdiği gerçek veriyi temsil ediyor.
+    # Eğer dosya zaten varsa bile üzerine yazıyorum ki format garanti olsun.
     csv_content = """date,dock_id,truck_id,carrier,order_id,arrival_time,departure_time,load_type,weight_kg,priority,facility_timezone
 2025-10-29,Dock-1,TRK-1001,Anadolu Logistics,ORD-50001,2025-10-29 08:04,2025-10-29 09:28,inbound,20558,normal,Europe/Istanbul
 2025-10-29,Dock-1,TRK-1002,EgeKargo,ORD-50002,2025-10-29 10:18,2025-10-29 11:34,outbound,6967,normal,Europe/Istanbul
@@ -71,86 +77,102 @@ def ensure_data_exists():
 
     with open(file_path, "w", encoding='utf-8') as f:
         f.write(csv_content)
+
     print("✅ Gerçek veri seti (data/raw_logs.csv) oluşturuldu/güncellendi.")
+
 
 # --- 2. U MATRİSİNİ HESAPLA (Gerçek Formata Göre) ---
 def build_U(csv_path, R=6, delta=10):
+    # CSV'yi pandas ile okuyorum.
     df = pd.read_csv(csv_path)
-    
-    # Dock ID 'Dock-1' şeklinde geliyor, bunu integer'a çevirelim
-    # Örn: 'Dock-1' -> 1, 'Dock-2' -> 2
-    # Kodda kullanmak için index (0-5) istiyorsak -1 yapacağız
-    
-    total_minutes = 1440 # 1 gün
+
+    total_minutes = 1440  # 1 gün
     T = math.ceil(total_minutes / delta)
+
+    # U: R x T boyutunda sıfırlarla dolu bir occupancy matrisi.
     U = np.zeros((R, T), dtype=int)
-    
+
     for _, row in df.iterrows():
-        # Dock ID Parse
-        dock_str = row['dock_id'] # "Dock-1"
+        # Dock ID "Dock-1" gibi string geliyor.
+        # Burada '1' kısmını alıp index'e çeviriyorum.
+        dock_str = row['dock_id']  # "Dock-1"
         try:
-            dock_num = int(dock_str.split('-')[1]) # 1 alır
-            dock_idx = dock_num - 1 # 0 tabanlı index (Dock-1 -> Index 0)
+            dock_num = int(dock_str.split('-')[1])  # 1
+            dock_idx = dock_num - 1                # 0 tabanlı index
         except:
-            continue # Hatalı format
-            
-        if dock_idx >= R: continue
-        
-        # Tarih/Saat Parse (YYYY-MM-DD HH:MM formatı var)
-        # Sadece HH:MM lazım
-        start_full = row['arrival_time']   # "2025-10-29 08:04"
-        end_full = row['departure_time']   # "2025-10-29 09:28"
-        
+            continue  # Format bozuksa o kaydı es geçiyorum.
+
+        if dock_idx >= R:
+            continue
+
+        # Tarih/saat formatı "2025-10-29 08:04" şeklinde.
+        # Benim için HH:MM kısmı yeterli.
+        start_full = row['arrival_time']
+        end_full = row['departure_time']
+
         h1, m1 = map(int, start_full.split(' ')[1].split(':'))
         t_start = h1 * 60 + m1
-        
+
         h2, m2 = map(int, end_full.split(' ')[1].split(':'))
         t_end = h2 * 60 + m2
-        
-        if t_end < t_start: t_end += 1440 # Gece yarısı
-            
+
+        # Gece yarısını geçiyorsa düzeltme yapıyorum.
+        if t_end < t_start:
+            t_end += 1440
+
+        # Dakikayı slot index'ine çeviriyorum.
         s_start = math.floor(t_start / delta)
         s_end = math.ceil(t_end / delta)
-        
+
+        # Bu aralıktaki slotları 1 yapıyorum.
         for t in range(s_start, min(s_end, T)):
             U[dock_idx, t] = 1
-            
+
     return U, T
+
 
 # --- 3. ÇİZİM VE KAYIT ---
 def plot_all():
+    # Önce gerçek verinin data/raw_logs.csv olarak hazır olduğundan emin oluyorum.
     ensure_data_exists()
-    
+
+    # figures klasörü yoksa oluşturuyorum.
     if not os.path.exists("figures"):
         os.makedirs("figures")
 
     # Hocanın verisinde 6 tane dock var (Dock-1 ... Dock-6)
-    REAL_R = 6 
+    REAL_R = 6
     U, T = build_U("data/raw_logs.csv", R=REAL_R)
-    
+
     # 3.1 HEATMAP
     plt.figure(figsize=(14, 6))
-    # Viridis (Sarı/Mor) renk haritası
+
+    # U matrisini heatmap olarak çiziyorum.
+    # Viridis colormap: yoğunluk arttıkça renk değişiyor.
     plt.imshow(U, aspect='auto', cmap='viridis', interpolation='nearest')
-    
-    # X Ekseni (Saatler)
-    hour_ticks = range(0, T, 6) # Her saat başı
-    hour_labels = [f"{int(h*10/60):02d}:00" for h in hour_ticks]
+
+    # X ekseni için saat etiketleri (örnek olarak her 6 slotta bir).
+    hour_ticks = range(0, T, 6)
+    hour_labels = [f"{int(h * 10 / 60):02d}:00" for h in hour_ticks]
     plt.xticks(hour_ticks, hour_labels, rotation=45)
-    
-    # Y Ekseni (Dock İsimleri)
+
+    # Y ekseni için dock isimlerini yazıyorum.
     plt.yticks(range(REAL_R), [f"Dock-{i+1}" for i in range(REAL_R)])
-    
+
     plt.title("Dock Occupancy Heatmap (Actual Data)")
     plt.xlabel("Time")
     plt.ylabel("Docks")
     plt.colorbar(label="Occupancy")
     plt.tight_layout()
+
+    # Heatmap'i figures klasörüne kaydediyorum.
     plt.savefig("figures/heatmap.png", dpi=300)
     print("✅ figures/heatmap.png güncellendi (Gerçek Veriyle!).")
-    
+
     # 3.2 BAR CHART
+    # Her satır (dock) için toplam 1 sayısını hesaplıyorum.
     counts = [np.sum(row) for row in U]
+
     plt.figure(figsize=(10, 6))
     plt.bar(range(REAL_R), counts, color='#ffc107', edgecolor='black')
     plt.xticks(range(REAL_R), [f"Dock-{i+1}" for i in range(REAL_R)])
@@ -159,8 +181,14 @@ def plot_all():
     plt.ylabel("Count")
     plt.grid(axis='y', linestyle='--', alpha=0.5)
     plt.tight_layout()
+
+    # Bar chart'ı da kaydediyorum.
     plt.savefig("figures/bar_totals.png", dpi=300)
     print("✅ figures/bar_totals.png güncellendi.")
 
+
+# Bu dosyayı direkt çalıştırırsam:
+# → hem veriyi oluşturuyor
+# → hem de görselleri üretip figures klasörüne atıyor.
 if __name__ == "__main__":
     plot_all()
