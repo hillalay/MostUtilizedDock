@@ -1,4 +1,4 @@
-# 🚚 Most Utilized Dock — Algorithm Analysis Project
+# Most Utilized Dock — Algorithm Analysis Project
 
 This project analyzes dock utilization by constructing a binary occupancy matrix from raw event logs and identifying the **most utilized dock**.  
 Two algorithmic approaches are implemented and compared:
@@ -216,10 +216,12 @@ bash
 python src/run_experiment.py
 
 
-Output example:
-Sequential:       best_row=3  count=142
-Divide & Conquer: best_row=3  count=142
+### Output Example
+
+Sequential: best_row = 3, count = 142
+Divide & Conquer: best_row = 3, count = 142
 OK — Both methods match.
+
 
 7. Visualizations
 File:
