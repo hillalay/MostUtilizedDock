@@ -5,6 +5,7 @@ import math
 
 def create_full_data_environment():
     # 1. Klasör Kontrolü
+    # Veri dosyalarını tutacağım 'data' klasörü yoksa oluşturuyorum.
     if not os.path.exists("data"):
         os.makedirs("data")
         print("📂 'data' klasörü kontrol edildi.")
@@ -12,7 +13,7 @@ def create_full_data_environment():
     # ==========================================
     # DOSYA 1: dock_events_raw_sample.csv (GİRDİ)
     # ==========================================
-    # Hocanın 54 satırlık gerçek verisi
+    # Hocanın 54 satırlık gerçek verisi - bunu ham input olarak saklıyorum.
     raw_csv_content = """date,dock_id,truck_id,carrier,order_id,arrival_time,departure_time,load_type,weight_kg,priority,facility_timezone
 2025-10-29,Dock-1,TRK-1001,Anadolu Logistics,ORD-50001,2025-10-29 08:04,2025-10-29 09:28,inbound,20558,normal,Europe/Istanbul
 2025-10-29,Dock-1,TRK-1002,EgeKargo,ORD-50002,2025-10-29 10:18,2025-10-29 11:34,outbound,6967,normal,Europe/Istanbul
@@ -69,6 +70,7 @@ def create_full_data_environment():
 2025-10-29,Dock-6,TRK-1053,Anadolu Logistics,ORD-50053,2025-10-29 20:07,2025-10-29 21:01,inbound,6917,normal,Europe/Istanbul
 2025-10-29,Dock-6,TRK-1054,Aegean Express,ORD-50054,2025-10-29 21:16,2025-10-29 22:00,inbound,24317,low,Europe/Istanbul"""
 
+    # Ham veriyi data/dock_events_raw_sample.csv içine yazıyorum.
     raw_path = "data/dock_events_raw_sample.csv"
     with open(raw_path, "w", encoding="utf-8") as f:
         f.write(raw_csv_content)
@@ -77,46 +79,58 @@ def create_full_data_environment():
     # ==========================================
     # ADIM 2: Diğer Dosyaları Hesapla (ÇIKTILAR)
     # ==========================================
+    # Şimdi bu ham veriden U matrisini ve özetleri çıkaracağım.
     df = pd.read_csv(raw_path)
     
-    R = 6 # Hocanın verisi 6 dock (Dock-1 ... Dock-6)
-    delta = 10 # 10 dakika slot
-    T = math.ceil(1440 / delta)
+    R = 6  # Hocanın verisi 6 dock (Dock-1 ... Dock-6)
+    delta = 10  # Slot uzunluğu: 10 dakika
+    T = math.ceil(1440 / delta)  # Bir günde toplam kaç slot var?
+
+    # R x T boyutunda, başta tamamen 0'lardan oluşan U matrisini oluşturuyorum.
     U = np.zeros((R, T), dtype=int)
 
+    # Her satır bir kamyon olayını temsil ediyor (arrival + departure)
     for _, row in df.iterrows():
         try:
-            # Dock ID Parse (Dock-1 -> 0)
+            # Dock ID Parse (Dock-1 -> index 0)
             d_str = row['dock_id']
             d_idx = int(d_str.split('-')[1]) - 1
-            if d_idx >= R: continue
+            if d_idx >= R:
+                continue  # Eğer beklediğim dock aralığının dışındaysa atlıyorum.
 
-            # Saat Parse
+            # Saat Parse (arrival ve departure)
             t1_str = row['arrival_time']
             t2_str = row['departure_time']
             
-            # pandas ile daha kolay parse
+            # pandas ile datetime'a çevirip dakikaya indiriyorum.
             ts = pd.to_datetime(t1_str)
             te = pd.to_datetime(t2_str)
             
             m1 = ts.hour * 60 + ts.minute
             m2 = te.hour * 60 + te.minute
             
-            if m2 < m1: m2 += 1440 # Gece yarısı
+            # Eğer bitiş, başlangıçtan küçükse gece yarısını geçtiğini varsayıyorum.
+            if m2 < m1:
+                m2 += 1440  # Gece yarısı düzeltmesi
                 
+            # Dakikayı slot index aralığına çeviriyorum.
             s_start = math.floor(m1 / delta)
             s_end = math.ceil(m2 / delta)
             
+            # Bu slot aralığındaki hücreleri 1 yapıyorum (dock dolu demek).
             for t in range(s_start, min(s_end, T)):
                 U[d_idx, t] = 1
         except Exception as e:
+            # Hesaplama sırasında bir hata çıkarsa o satırı es geçiyorum.
+            # Burada projeyi patlatmak istemediğim için try/except ile sardım.
             continue
 
     # --- DOSYA 2: dock_occupancy_matrix.csv (0 ve 1'li matris) ---
-    # Sütun isimleri: Slot_000, Slot_001 ...
+    # Sütun isimleri: Slot_000, Slot_001 ... şeklinde olsun istedim.
     col_names = [f"Slot_{i:03d}" for i in range(T)]
     df_matrix = pd.DataFrame(U, columns=col_names)
-    # En başa Dock ID ekleyelim
+
+    # En başa Dock ID sütununu ekliyorum ki hangi satır hangi dock belli olsun.
     df_matrix.insert(0, "dock_id", [f"Dock-{i+1}" for i in range(R)])
     
     mat_path = "data/dock_occupancy_matrix.csv"
@@ -124,6 +138,7 @@ def create_full_data_environment():
     print(f"✅ ÇIKTI 1 OLUŞTURULDU: {mat_path}")
 
     # --- DOSYA 3: dock_occupied_counts.csv (Özet Sayılar) ---
+    # Her dock için toplam dolu slot sayısını hesaplıyorum.
     counts = [int(np.sum(row)) for row in U]
     df_counts = pd.DataFrame({
         "dock_id": [f"Dock-{i+1}" for i in range(R)],
@@ -134,5 +149,6 @@ def create_full_data_environment():
     df_counts.to_csv(cnt_path, index=False)
     print(f"✅ ÇIKTI 2 OLUŞTURULDU: {cnt_path}")
 
+# Bu dosyayı direkt çalıştırınca bütün ortamı (input + 2 output CSV) hazırlıyor.
 if __name__ == "__main__":
     create_full_data_environment()
