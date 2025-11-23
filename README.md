@@ -294,9 +294,11 @@ Covers:
 * ties
 * zero matrices
 * simple known matrices
-11. Contributors
+
+
+### 11. Contributors
 | Role       | Member         | Responsibilities                                       |
-| ---------- | -------------- | ------------------------------------------------------ |
+| ---------- | -------------- |  |
 | **Role A** | *Your Name*    | Data preparation, Sequential algorithm, Visualizations |
 | **Role B** | *Partner Name* | D&C design, complexity analysis, experiments           |
 
